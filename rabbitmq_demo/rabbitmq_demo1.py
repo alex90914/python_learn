@@ -1,26 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import pika
-import random
 
-hostname = '192.168.1.99'
-port = 5672
-parameters = pika.ConnectionParameters(hostname=hostname, port=port)
-connection = pika.BlockingConnection(parameters)
-# 创建通道
-channel = connection.channel()
-# 如果rabbitmq自身挂掉的话，那么任务会丢失。所以需要将任务持久化存储起来，声明持久化存储：
-queue = 'py_test_task_queue'
-channel.queue_declare(queue=queue, durable=True)
-number = random.randint(1, 1000)
-message = 'hello world:%s' % number
-# 在发送任务的时候，用delivery_mode=2来标记任务为持久化存储：
-channel.basic_publish(exchange='',
-                      routing_key=queue,
-                      body=message,
-                      properties=pika.BasicProperties(
-                          delivery_mode=2,
-                      ))
-print
-" [x] Sent %r" % (message,)
-connection.close()
+
+def send_msg():
+    username = 'admin'  # 指定远程rabbitmq的用户名密码
+    pwd = 'admin'
+    user_pwd = pika.PlainCredentials(username, pwd)
+    connection_info = pika.ConnectionParameters(host='192.168.1.61', port=5672, credentials=user_pwd)
+    connection = pika.BlockingConnection(connection_info)  # 定义连接池
+    channel = connection.channel()  # 声明队列以向其发送消息消息
+    channel.queue_declare(queue='test_persistent', durable=True)
+    for i in range(1000):
+        channel.basic_publish(exchange='', routing_key='test_persistent', body=str(i),
+                              properties=pika.BasicProperties(delivery_mode=2))
+        print('send success msg[%s] to rabbitmq' % i)
+    connection.close()  # 关闭连接
+    channel.de
+
+
+if __name__ == '__main__':
+    send_msg()
