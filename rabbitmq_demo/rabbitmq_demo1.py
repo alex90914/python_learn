@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import pika
+import queue
 
 
 def send_msg():
     username = 'admin'  # 指定远程rabbitmq的用户名密码
     pwd = 'admin'
     user_pwd = pika.PlainCredentials(username, pwd)
-    connection_info = pika.ConnectionParameters(host='192.168.1.61', port=5672, credentials=user_pwd)
+    connection_info = pika.ConnectionParameters(host='192.168.1.99', port=5672, credentials=user_pwd)
     connection = pika.BlockingConnection(connection_info)  # 定义连接池
     channel = connection.channel()  # 声明队列以向其发送消息消息
     channel.queue_declare(queue='test_persistent', durable=True)
@@ -16,8 +17,24 @@ def send_msg():
                               properties=pika.BasicProperties(delivery_mode=2))
         print('send success msg[%s] to rabbitmq' % i)
     connection.close()  # 关闭连接
-    channel.de
+
+
+def callback(ch, method, properties, body):
+    print('[x] Received %r' % body)
+
+
+def recv_msg():
+    username = 'admin'  # 指定远程rabbitmq的用户名密码
+    pwd = 'admin'
+    user_pwd = pika.PlainCredentials(username, pwd)
+    connection_info = pika.ConnectionParameters(host='192.168.1.99', port=5672, credentials=user_pwd)
+    connection = pika.BlockingConnection(connection_info)  # 定义连接池
+    channel = connection.channel()  # 声明队列以向其发送消息消息
+    channel.queue_declare(queue='test_persistent', durable=True)
+    channel.basic_consume("test_persistent", callback)
+    channel.start_consuming()
 
 
 if __name__ == '__main__':
     send_msg()
+    recv_msg()
