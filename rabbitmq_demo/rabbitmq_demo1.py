@@ -8,7 +8,7 @@ def send_msg():
     username = 'admin'  # 指定远程rabbitmq的用户名密码
     pwd = 'admin'
     user_pwd = pika.PlainCredentials(username, pwd)
-    connection_info = pika.ConnectionParameters(host='192.168.1.99', port=5672, credentials=user_pwd)
+    connection_info = pika.ConnectionParameters(host='node01', port=5672, credentials=user_pwd)
     connection = pika.BlockingConnection(connection_info)  # 定义连接池
     channel = connection.channel()  # 声明队列以向其发送消息消息
     channel.queue_declare(queue='test_persistent', durable=True)
@@ -27,7 +27,7 @@ def recv_msg():
     username = 'admin'  # 指定远程rabbitmq的用户名密码
     pwd = 'admin'
     user_pwd = pika.PlainCredentials(username, pwd)
-    connection_info = pika.ConnectionParameters(host='192.168.1.99', port=5672, credentials=user_pwd)
+    connection_info = pika.ConnectionParameters(host='node01', port=5672, credentials=user_pwd)
     connection = pika.BlockingConnection(connection_info)  # 定义连接池
     channel = connection.channel()  # 声明队列以向其发送消息消息
     channel.queue_declare(queue='test_persistent', durable=True)
@@ -36,5 +36,5 @@ def recv_msg():
 
 
 if __name__ == '__main__':
-    send_msg()
+    # send_msg()
     recv_msg()
